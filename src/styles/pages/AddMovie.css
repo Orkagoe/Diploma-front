@@ -1,0 +1,130 @@
+.add-movie {
+  padding: 20px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.add-movie-container {
+  background: #1a1a1a;
+  padding: 40px;
+  border-radius: 15px;
+  border: 1px solid #333;
+}
+
+.add-movie-container h1 {
+  color: #fff;
+  text-align: center;
+  margin-bottom: 10px;
+  font-size: 32px;
+}
+
+.add-movie-container > p {
+  color: #ccc;
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.add-movie-form {
+  margin-bottom: 30px;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 15px 20px;
+  border: 2px solid #333;
+  border-radius: 25px;
+  background: #2a2a2a;
+  color: white;
+  font-size: 16px;
+  outline: none;
+  transition: all 0.3s ease;
+}
+
+.form-group input:focus {
+  border-color: #ff0000;
+  background: #3a3a3a;
+}
+
+.add-movie-form button {
+  width: 100%;
+  padding: 15px;
+  background: linear-gradient(135deg, #ff0000 0%, #cc0000 100%);
+  color: white;
+  border: none;
+  border-radius: 25px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.add-movie-form button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 20px rgba(255, 0, 0, 0.3);
+}
+
+.add-movie-form button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.message {
+  padding: 15px 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  text-align: center;
+  font-weight: 500;
+}
+
+.message.success {
+  background: rgba(0, 255, 0, 0.1);
+  color: #00ff00;
+  border: 1px solid #00ff00;
+}
+
+.message.error {
+  background: rgba(255, 0, 0, 0.1);
+  color: #ff6b6b;
+  border: 1px solid #ff6b6b;
+}
+
+.help-info {
+  background: #2a2a2a;
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid #333;
+}
+
+.help-info h3 {
+  color: #fff;
+  margin-bottom: 15px;
+  font-size: 18px;
+}
+
+.help-info ul {
+  color: #ccc;
+  padding-left: 20px;
+}
+
+.help-info li {
+  margin-bottom: 8px;
+  line-height: 1.5;
+}
+
+@media (max-width: 768px) {
+  .add-movie {
+    padding: 15px;
+  }
+  
+  .add-movie-container {
+    padding: 30px 20px;
+  }
+  
+  .add-movie-container h1 {
+    font-size: 28px;
+  }
+}
