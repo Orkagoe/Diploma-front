@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getMovies } from '../utils/api';
+import HeroCarousel from '../components/HeroCarousel';
 import '../styles/pages/GenreList.css';
 
 const GenreList = () => {
@@ -17,7 +18,6 @@ const GenreList = () => {
         
         let filtered = movies;
         
-        // Фильтрация по типу контента
         if (type === 'anime') {
           filtered = filtered.filter(movie => movie.type === 'anime');
         } else if (type === 'movies') {
@@ -43,7 +43,6 @@ const GenreList = () => {
         setGenres(Array.from(genresSet).sort());
       } catch (err) {
         console.error('Error fetching genres:', err);
-        // Не показываем ошибку, используем моковые данные
       } finally {
         setLoading(false);
       }
@@ -69,6 +68,9 @@ const GenreList = () => {
     navigate(`/${type}/genre/${encodeURIComponent(genre)}`);
   };
 
+  // Показываем карусель только на главной странице
+  const isHomePage = !type || type === 'movies';
+
   if (loading) {
     return (
       <div className="genre-list">
@@ -82,6 +84,9 @@ const GenreList = () => {
 
   return (
     <div className="genre-list">
+      {/* Карусель на главной */}
+      {isHomePage && <HeroCarousel />}
+
       <div className="genre-header">
         <h1>{getTypeTitle()}</h1>
         <p>Выберите жанр для просмотра {type === 'movies' ? 'фильмов' : type === 'anime' ? 'аниме' : 'сериалов'}</p>

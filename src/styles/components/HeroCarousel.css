@@ -1,0 +1,458 @@
+.hero-carousel {
+  padding: 40px 20px;
+  background: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 100%);
+  border-radius: 12px;
+  margin: 20px 0;
+  position: relative;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  overflow: hidden; /* Предотвращаем переполнение */
+}
+
+.carousel-header {
+  text-align: center;
+  margin-bottom: 40px;
+  position: relative;
+  z-index: 1;
+}
+
+.carousel-header h2 {
+  color: #fff;
+  font-size: 2.5rem;
+  margin-bottom: 12px;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+  font-weight: 700;
+}
+
+.carousel-header p {
+  color: #ccc;
+  font-size: 1.1rem;
+  opacity: 0.9;
+}
+
+.carousel-container {
+  position: relative;
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+}
+
+.carousel {
+  display: flex;
+  width: 100%;
+  height: 450px;
+  perspective: 1000px;
+  position: relative;
+  justify-content: center;
+}
+
+.carousel-item {
+  position: absolute;
+  width: 300px;
+  height: 400px;
+  border-radius: 16px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-style: preserve-3d;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.carousel-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.6s ease;
+}
+
+.carousel-item:hover img {
+  transform: scale(1.08);
+}
+
+.carousel-content {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.95));
+  padding: 24px;
+  color: white;
+  transform: translateY(100%);
+  transition: transform 0.3s ease;
+  backdrop-filter: blur(5px);
+}
+
+.carousel-item:hover .carousel-content {
+  transform: translateY(0);
+}
+
+.carousel-content h3 {
+  font-size: 1.4rem;
+  margin-bottom: 12px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.item-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+  font-size: 0.85rem;
+}
+
+.item-meta span {
+  background: rgba(255, 255, 255, 0.15);
+  padding: 6px 12px;
+  border-radius: 16px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.watch-btn {
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(135deg, #ff0000 0%, #cc0000 100%);
+  color: white;
+  border: none;
+  border-radius: 25px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  font-size: 0.95rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.watch-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 0, 0, 0.4);
+  background: linear-gradient(135deg, #ff3333 0%, #dd0000 100%);
+}
+
+/* Позиционирование элементов */
+.carousel-item.active {
+  transform: translateX(0) scale(1) rotateY(0deg);
+  z-index: 10;
+  left: 50%;
+  margin-left: -150px;
+}
+
+.carousel-item.prev {
+  transform: translateX(-75%) scale(0.85) rotateY(15deg);
+  z-index: 5;
+  opacity: 0.8;
+  left: calc(50% - 240px);
+  filter: brightness(0.8);
+}
+
+.carousel-item.next {
+  transform: translateX(75%) scale(0.85) rotateY(-15deg);
+  z-index: 5;
+  opacity: 0.8;
+  left: calc(50% + 90px);
+  filter: brightness(0.8);
+}
+
+.carousel-item:not(.active):not(.prev):not(.next) {
+  transform: translateX(0) scale(0.6) rotateY(0deg);
+  opacity: 0.3;
+  z-index: 1;
+  left: 50%;
+  margin-left: -150px;
+  filter: blur(2px);
+}
+
+/* Кнопки навигации */
+.carousel-btn {
+  position: absolute;
+  width: 50px;
+  height: 50px;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  border-radius: 50%;
+  color: white;
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.carousel-btn.prev {
+  left: 10px;
+}
+
+.carousel-btn.next {
+  right: 10px;
+}
+
+.carousel-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: scale(1.1);
+  box-shadow: 0 4px 15px rgba(255, 255, 255, 0.2);
+}
+
+/* Точки навигации */
+.carousel-dots {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 32px;
+  padding: 0 20px;
+}
+
+.dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.25);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.dot.active {
+  background: #ff0000;
+  transform: scale(1.3);
+  box-shadow: 0 0 15px rgba(255, 0, 0, 0.5);
+}
+
+.dot:hover {
+  background: rgba(255, 255, 255, 0.4);
+  transform: scale(1.2);
+}
+
+/* Анимации */
+@keyframes carouselSlide {
+  from {
+    opacity: 0;
+    transform: translateX(100px) scale(0.8) rotateY(30deg);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1) rotateY(0deg);
+  }
+}
+
+.carousel-item.active {
+  animation: carouselSlide 0.6s ease-out;
+}
+
+/* Адаптивность */
+@media (max-width: 1200px) {
+  .carousel-container {
+    max-width: 1000px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .carousel-item {
+    width: 260px;
+    height: 360px;
+  }
+  
+  .carousel-item.active {
+    margin-left: -130px;
+  }
+  
+  .carousel-item.prev {
+    transform: translateX(-70%) scale(0.85);
+    left: calc(50% - 210px);
+  }
+  
+  .carousel-item.next {
+    transform: translateX(70%) scale(0.85);
+    left: calc(50% + 80px);
+  }
+  
+  .carousel {
+    height: 400px;
+  }
+}
+
+@media (max-width: 768px) {
+  .hero-carousel {
+    padding: 24px 16px;
+    margin: 16px 0;
+    border-radius: 8px;
+  }
+  
+  .carousel-header h2 {
+    font-size: 2rem;
+  }
+  
+  .carousel-header p {
+    font-size: 1rem;
+  }
+  
+  .carousel {
+    height: 350px;
+  }
+  
+  .carousel-item {
+    width: 220px;
+    height: 320px;
+  }
+  
+  .carousel-item.active {
+    margin-left: -110px;
+  }
+  
+  .carousel-item.prev {
+    transform: translateX(-65%) scale(0.8);
+    left: calc(50% - 180px);
+    opacity: 0.7;
+  }
+  
+  .carousel-item.next {
+    transform: translateX(65%) scale(0.8);
+    left: calc(50% + 70px);
+    opacity: 0.7;
+  }
+  
+  .carousel-btn {
+    width: 42px;
+    height: 42px;
+    font-size: 1.3rem;
+  }
+  
+  .carousel-content {
+    padding: 20px;
+  }
+  
+  .carousel-content h3 {
+    font-size: 1.2rem;
+  }
+  
+  .watch-btn {
+    padding: 12px;
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .carousel-item {
+    width: 200px;
+    height: 300px;
+  }
+  
+  .carousel-item.active {
+    margin-left: -100px;
+  }
+  
+  .carousel-item.prev {
+    left: calc(50% - 160px);
+    transform: translateX(-60%) scale(0.75);
+  }
+  
+  .carousel-item.next {
+    left: calc(50% + 60px);
+    transform: translateX(60%) scale(0.75);
+  }
+  
+  .carousel-btn {
+    width: 38px;
+    height: 38px;
+    font-size: 1.1rem;
+  }
+  
+  .carousel-dots {
+    margin-top: 24px;
+  }
+  
+  .dot {
+    width: 12px;
+    height: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .carousel-header h2 {
+    font-size: 1.7rem;
+  }
+  
+  .carousel {
+    height: 320px;
+  }
+  
+  .carousel-item {
+    width: 180px;
+    height: 270px;
+  }
+  
+  .carousel-item.active {
+    margin-left: -90px;
+  }
+  
+  .carousel-item.prev {
+    left: calc(50% - 140px);
+    transform: translateX(-55%) scale(0.7);
+  }
+  
+  .carousel-item.next {
+    left: calc(50% + 50px);
+    transform: translateX(55%) scale(0.7);
+  }
+  
+  .carousel-content {
+    padding: 16px;
+  }
+  
+  .carousel-content h3 {
+    font-size: 1.1rem;
+    margin-bottom: 8px;
+  }
+  
+  .item-meta {
+    margin-bottom: 12px;
+  }
+  
+  .item-meta span {
+    padding: 4px 8px;
+    font-size: 0.8rem;
+  }
+  
+  .watch-btn {
+    padding: 10px;
+    font-size: 0.85rem;
+  }
+}
+
+/* Звёзды по бокам */
+.stars-canvas {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 20vw; /* занимаем только 20% экрана */
+  height: 100%;
+  pointer-events: none; /* чтобы не мешать кликам */
+  z-index: 1; /* на заднем плане */
+}
+
+.stars-canvas.left {
+  left: 0;
+}
+
+.stars-canvas.right {
+  right: 0;
+}
+
+.hero-carousel {
+  position: relative;
+  overflow: hidden;
+  z-index: 2; /* контент поверх звёзд */
+}
+
+.carousel-content-wrapper {
+  position: relative;
+  z-index: 3; /* текст и картинки поверх */
+}
