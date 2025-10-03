@@ -13,10 +13,10 @@ const Sidebar = () => {
     { name: 'Сериалы', icon: '📺', path: '/series' },
     { name: 'Избранное', icon: '⭐', path: '/favorites' },
     { name: 'История', icon: '📜', path: '/history' },
-    { name: 'Авторы', icon: '👤', path: '/authors' }, // Обновлено на /authors вместо /author/1
+    { name: 'Авторы', icon: '👤', path: '/authors' }, 
     { name: 'Сортировка', icon: '🔍', path: '/sorting' },
     { name: 'Главная', icon: '🏠', path: '/main' },
-    { name: 'Настройки', icon: '⚙️', path: '/user' }
+    { name: 'Настройки', icon: '⚙️', path: '/settings' }
   ];
 
   const isActive = (path) => {

@@ -1,5 +1,5 @@
 // src/pages/MovieDetails.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { getMovieDetails, getMovieReviews } from '../utils/api';
 import { useHistory } from '../context/HistoryContext';
@@ -12,31 +12,32 @@ const MovieDetails = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const { addToHistory } = useHistory();
-
-  const userId = 'user1'; // Пример ID пользователя
+  const userId = 'user1';
   const [favorites, setFavorites] = useState(() => {
     const savedFavorites = localStorage.getItem(`favorites_${userId}`);
     return savedFavorites ? JSON.parse(savedFavorites) : [];
   });
+  const [hasAddedToHistory, setHasAddedToHistory] = useState(false);
+
+  const handleAddToFavorites = useCallback(() => {
+    if (movie && !favorites.includes(movie.id)) {
+      const updatedFavorites = [...favorites, movie.id];
+      setFavorites(updatedFavorites);
+      localStorage.setItem(`favorites_${userId}`, JSON.stringify(updatedFavorites));
+      console.log(`Добавлено в избранное: ${movie.title} (ID: ${movie.id})`);
+    } else if (movie) {
+      console.log(`Фильм ${movie.title} уже в избранном`);
+    }
+  }, [movie, favorites]);
 
   useEffect(() => {
-    let isMounted = true; // Флаг для предотвращения обновления состояния после размонтирования
-
     const fetchMovieDetails = async () => {
       try {
         setLoading(true);
-        setError(''); // Сбрасываем предыдущую ошибку
-        console.log(`Fetching details for movie ID: ${id}`); // Лог для диагностики
-
         const [movieData, reviewsData] = await Promise.all([
           getMovieDetails(id),
-          getMovieReviews(id)
+          getMovieReviews(id),
         ]);
-
-        console.log('Movie data:', movieData); // Лог данных фильма
-        console.log('Reviews data:', reviewsData); // Лог отзывов
-
-        if (!isMounted) return; // Проверяем, смонтирован ли компонент
 
         if (!movieData || Object.keys(movieData).length === 0) {
           throw new Error('Фильм не найден в данных API');
@@ -44,43 +45,26 @@ const MovieDetails = () => {
 
         setMovie(movieData);
         setReviews(reviewsData || []);
-        if (movieData) {
+
+        if (movieData && !hasAddedToHistory) {
           addToHistory({
             id: movieData.id,
             title: movieData.title,
-            type: 'movie',
-            thumbnailUrl: movieData.thumbnailUrl
+            type: movieData.type,
+            thumbnailUrl: movieData.thumbnailUrl,
           });
+          setHasAddedToHistory(true);
         }
       } catch (err) {
-        if (isMounted) {
-          console.error('Detailed error:', err.message);
-          setError(`Не удалось загрузить информацию о фильме: ${err.message}`);
-        }
+        setError(`Не удалось загрузить информацию о фильме: ${err.message}`);
+        console.error('Error:', err);
       } finally {
-        if (isMounted) {
-          setLoading(false);
-        }
+        setLoading(false);
       }
     };
 
     fetchMovieDetails();
-
-    return () => {
-      isMounted = false; // Очистка при размонтировании
-    };
-  }, [id, addToHistory]);
-
-  const handleAddToFavorites = () => {
-    if (movie && !favorites.includes(movie.id)) {
-      const updatedFavorites = [...favorites, movie.id];
-      setFavorites(updatedFavorites);
-      localStorage.setItem(`favorites_${userId}`, JSON.stringify(updatedFavorites));
-      console.log(`Добавлено в избранное: ${movie.id}`);
-    } else if (movie) {
-      console.log(`Фильм ${movie.id} уже в избранном`);
-    }
-  };
+  }, [id, hasAddedToHistory, addToHistory]);
 
   if (loading) {
     return <div className="loading">Загрузка фильма...</div>;
@@ -112,22 +96,17 @@ const MovieDetails = () => {
               <span>🌍 {movie.country}</span>
             </div>
             <p className="movie-genre">🎭 {movie.genre}</p>
-            <button
-              className="favorite-btn"
-              onClick={handleAddToFavorites}
-            >
+            <button className="favorite-btn" onClick={handleAddToFavorites}>
               {favorites.includes(movie.id) ? '✓ Избранное' : 'Добавить в избранное'}
             </button>
           </div>
         </div>
       </div>
-
       <div className="movie-content">
         <div className="movie-description">
           <h2>📖 Описание</h2>
           <p>{movie.description || 'Описание отсутствует'}</p>
         </div>
-
         <div className="movie-reviews">
           <h2>💬 Отзывы ({reviews.length})</h2>
           {reviews.length === 0 ? (
@@ -138,6 +117,7 @@ const MovieDetails = () => {
                 <div key={review.id} className="review-card">
                   <div className="review-header">
                     <span className="review-rating">⭐ {review.rating}/10</span>
+                    <span className="review-author">{review.author}</span>
                   </div>
                   <p className="review-comment">{review.comment}</p>
                 </div>

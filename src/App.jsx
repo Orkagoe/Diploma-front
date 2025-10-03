@@ -13,8 +13,10 @@ import AuthorPage from './pages/AuthorPage';
 import Authors from './pages/Authors';
 import Favorites from './pages/Favorites';
 import History from './pages/History';
+import Settings from './pages/Settings';
+import Analytics from './pages/Analytics';
 import { searchMovies } from './utils/api';
-import { HistoryProvider } from './context/HistoryContext'; // Импорт
+import { HistoryProvider } from './context/HistoryContext';
 import './App.css';
 
 function App() {
@@ -40,10 +42,10 @@ function App() {
   }, []);
 
   return (
-    <HistoryProvider> {/* Обертываем приложение */}
+    <HistoryProvider>
       <Router>
         <div className="app">
-          <Header 
+          <Header
             onSearch={handleSearch}
             searchResults={searchResults}
             searchLoading={searchLoading}
@@ -53,15 +55,20 @@ function App() {
             <main className="main-content">
               <Routes>
                 <Route path="/login" element={<Login />} />
-                <Route path="/add" element={
-                  <PrivateRoute roleRequired="ADMIN">
-                    <AddMovie />
-                  </PrivateRoute>
-                } />
+                <Route
+                  path="/add"
+                  element={
+                    <PrivateRoute roleRequired="ADMIN">
+                      <AddMovie />
+                    </PrivateRoute>
+                  }
+                />
                 <Route path="/author/:id" element={<AuthorPage />} />
                 <Route path="/authors" element={<Authors />} />
                 <Route path="/favorites" element={<Favorites />} />
                 <Route path="/history" element={<History />} />
+                <Route path="/settings" element={<Settings />} />
+                <Route path="/analytics" element={<Analytics />} /> {/* Добавлен маршрут для Analytics */}
                 <Route path="/:type" element={<GenreList />} />
                 <Route path="/:type/genre/:genre" element={<MovieList />} />
                 <Route path="/:type/movie/:id" element={<MovieDetails />} />

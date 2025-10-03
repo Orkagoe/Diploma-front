@@ -1,28 +1,38 @@
 // src/context/HistoryContext.js
-import React, { createContext, useState, useContext, useEffect } from 'react';
+import React, { createContext, useContext, useState } from 'react';
 
 const HistoryContext = createContext();
 
 export const HistoryProvider = ({ children }) => {
-  const userId = 'user1'; // Пример ID пользователя, можно заменить на реальный
+  const userId = 'user1';
   const [history, setHistory] = useState(() => {
-    const savedHistory = localStorage.getItem(`history_${userId}`);
-    return savedHistory ? JSON.parse(savedHistory) : [];
+    const saved = localStorage.getItem(`history_${userId}`);
+    return saved ? JSON.parse(saved) : [];
   });
 
-  useEffect(() => {
-    localStorage.setItem(`history_${userId}`, JSON.stringify(history));
-  }, [history]);
-
   const addToHistory = (item) => {
-    setHistory(prevHistory => {
-      const newHistory = [item, ...prevHistory.filter(h => h.id !== item.id)].slice(0, 20); // Ограничение до 20
-      return newHistory;
+    setHistory((prev) => {
+      const exists = prev.some((i) => i.id === item.id);
+      if (exists) {
+        console.log(`Фильм ${item.title} уже в истории`);
+        return prev; // Не добавляем дубли
+      }
+      const newItem = { ...item, timestamp: Date.now() }; // Добавляем временную метку
+      const updated = [newItem, ...prev].slice(0, 50); // Новые записи в начало, ограничиваем 50
+      localStorage.setItem(`history_${userId}`, JSON.stringify(updated));
+      console.log(`Добавлено в историю: ${item.title} (ID: ${item.id})`);
+      return updated;
     });
   };
 
+  const clearHistory = () => {
+    setHistory([]);
+    localStorage.removeItem(`history_${userId}`);
+    console.log('История очищена');
+  };
+
   return (
-    <HistoryContext.Provider value={{ history, addToHistory }}>
+    <HistoryContext.Provider value={{ history, addToHistory, clearHistory }}>
       {children}
     </HistoryContext.Provider>
   );

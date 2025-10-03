@@ -1,3 +1,4 @@
+// src/utils/api.js
 const API_BASE = 'http://localhost:8080';
 
 // Моковые данные для разработки
@@ -85,9 +86,7 @@ const getAuthHeaders = () => {
 
 // Auth API - моковая авторизация
 export const login = async (username, password) => {
-  await delay(1000); // Имитация задержки сети
-  
-  // Демо доступ
+  await delay(1000);
   if (username === 'admin' && password === 'admin') {
     return {
       token: 'mock-jwt-token-for-development',
@@ -95,7 +94,6 @@ export const login = async (username, password) => {
       username: 'admin'
     };
   }
-  
   if (username === 'user' && password === 'user') {
     return {
       token: 'mock-jwt-token-for-user',
@@ -103,7 +101,6 @@ export const login = async (username, password) => {
       username: 'user'
     };
   }
-  
   throw new Error('Неверный логин или пароль');
 };
 
@@ -114,7 +111,7 @@ export const register = async (username, password) => {
 
 // Movies API - возвращаем моковые данные
 export const getMovies = async () => {
-  await delay(800); // Имитация загрузки
+  await delay(800);
   return mockMovies;
 };
 
@@ -127,7 +124,6 @@ export const getMovieDetails = async (id) => {
 
 export const getMovieReviews = async (id) => {
   await delay(400);
-  // Моковые отзывы
   return [
     {
       id: 1,
@@ -146,7 +142,6 @@ export const getMovieReviews = async (id) => {
 
 export const addMovieFromImdb = async (imdbId) => {
   await delay(1000);
-  // Моковый ответ для добавления фильма
   return {
     id: Math.random() * 1000,
     title: `Фильм из IMDb ${imdbId}`,
@@ -158,13 +153,10 @@ export const addMovieFromImdb = async (imdbId) => {
 
 export const searchMovies = async (query) => {
   await delay(300);
-  
   const excludedWords = ['профиль', 'настройки', ' '];
   const lowerQuery = query.toLowerCase();
   const isExcluded = excludedWords.some(word => lowerQuery.includes(word));
-  
   if (isExcluded) return [];
-  
   return mockMovies.filter(movie =>
     movie.title.toLowerCase().includes(lowerQuery) ||
     movie.genre.toLowerCase().includes(lowerQuery) ||

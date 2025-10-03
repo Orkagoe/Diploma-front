@@ -1,15 +1,28 @@
 // src/pages/History.jsx
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useHistory } from '../context/HistoryContext'; // Импорт хука
+import { useHistory } from '../context/HistoryContext';
 import '../styles/pages/History.css';
 
 const History = () => {
   const navigate = useNavigate();
-  const { history } = useHistory(); // Получаем историю из контекста
+  const { history } = useHistory();
 
   const handleItemClick = (id, type) => {
+    console.log(`Переход к ${type}/movie/${id}`);
     navigate(`/${type}/movie/${id}`);
+  };
+
+  // Форматирование времени просмотра
+  const formatTimestamp = (timestamp) => {
+    const date = new Date(timestamp);
+    return date.toLocaleString('ru-RU', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
   };
 
   if (history.length === 0) {
@@ -21,7 +34,7 @@ const History = () => {
         </div>
         <div className="empty-state">
           <h3>История пуста</h3>
-          <p>Посетите фильмы или аниме, чтобы начать</p>
+          <p>Посетите фильмы, сериалы или аниме, чтобы начать</p>
         </div>
       </div>
     );
@@ -47,7 +60,10 @@ const History = () => {
             />
             <div className="history-info">
               <h3 className="history-title">{item.title}</h3>
-              <p className="history-type">{item.type === 'movie' ? 'Фильм' : 'Аниме'}</p>
+              <p className="history-type">
+                {item.type === 'movie' ? 'Фильм' : item.type === 'series' ? 'Сериал' : 'Аниме'}
+              </p>
+              <p className="history-timestamp">Просмотрено: {formatTimestamp(item.timestamp)}</p>
             </div>
           </div>
         ))}
