@@ -1,3 +1,4 @@
+// src/components/Sidebar.jsx
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import '../styles/components/Sidebar.css';
@@ -11,7 +12,11 @@ const Sidebar = () => {
     { name: 'Аниме', icon: '🐉', path: '/anime' },
     { name: 'Сериалы', icon: '📺', path: '/series' },
     { name: 'Избранное', icon: '⭐', path: '/favorites' },
-    { name: 'История', icon: '📜', path: '/history' }
+    { name: 'История', icon: '📜', path: '/history' },
+    { name: 'Авторы', icon: '👤', path: '/authors' }, // Обновлено на /authors вместо /author/1
+    { name: 'Сортировка', icon: '🔍', path: '/sorting' },
+    { name: 'Главная', icon: '🏠', path: '/main' },
+    { name: 'Настройки', icon: '⚙️', path: '/user' }
   ];
 
   const isActive = (path) => {

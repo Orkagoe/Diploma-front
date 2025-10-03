@@ -1,3 +1,4 @@
+/* src/styles/pages/MovieDetails.css */
 .movie-details {
   max-width: 1200px;
   margin: 0 auto;
@@ -62,6 +63,21 @@
 .movie-genre {
   font-size: 18px;
   opacity: 0.9;
+}
+
+.favorite-btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 20px;
+  background: #ff6b6b; /* Красный для акцента */
+  color: #fff;
+  cursor: pointer;
+  margin-top: 15px;
+  transition: background 0.3s ease;
+}
+
+.favorite-btn:hover {
+  background: #ff8787;
 }
 
 .movie-content {
@@ -147,6 +163,26 @@
   color: #ff6b6b;
 }
 
+.comment-section {
+  text-align: center;
+  margin-top: 40px;
+}
+
+.comment-btn {
+  padding: 12px 25px;
+  border: none;
+  border-radius: 20px;
+  background: #4a90e2; /* Синий для акцента */
+  color: #fff;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background 0.3s ease;
+}
+
+.comment-btn:hover {
+  background: #357abd;
+}
+
 @media (max-width: 968px) {
   .movie-content {
     grid-template-columns: 1fr;
@@ -180,6 +216,16 @@
   
   .movie-meta span {
     padding: 6px 12px;
+    font-size: 14px;
+  }
+  
+  .favorite-btn {
+    padding: 8px 16px;
+    margin-top: 10px;
+  }
+  
+  .comment-btn {
+    padding: 10px 20px;
     font-size: 14px;
   }
 }

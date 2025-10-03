@@ -1,67 +1,63 @@
-/* src/styles/pages/MovieList.css */
-.movie-list {
+/* src/styles/pages/Favorites.css */
+.favorites-page {
   padding: 20px;
   max-width: 1400px;
   margin: 0 auto;
 }
 
-.movie-list-header {
+.favorites-header {
   margin-bottom: 30px;
+  text-align: center;
 }
 
-.movie-list-header h1 {
+.favorites-header h1 {
   font-size: 32px;
   color: #fff;
   margin-bottom: 10px;
 }
 
-.movie-list-header p {
+.favorites-header p {
   color: #666;
   font-size: 14px;
 }
 
-.movies-grid {
+.favorites-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
   gap: 25px;
 }
 
-.movie-card-container {
-  position: relative;
-}
-
-.movie-card {
+.favorite-card {
   background: #1a1a1a;
   border-radius: 12px;
   overflow: hidden;
-  cursor: pointer;
-  transition: all 0.3s ease;
   border: 1px solid #333;
   position: relative;
+  transition: all 0.3s ease;
 }
 
-.movie-card:hover {
+.favorite-card:hover {
   transform: translateY(-5px) scale(1.02);
-  box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
   border-color: #ff0000;
 }
 
-.movie-image {
+.favorite-image {
   width: 100%;
   height: 350px;
   object-fit: cover;
   transition: transform 0.3s ease;
 }
 
-.movie-card:hover .movie-image {
+.favorite-card:hover .favorite-image {
   transform: scale(1.05);
 }
 
-.movie-info {
+.favorite-info {
   padding: 20px;
 }
 
-.movie-title {
+.favorite-title {
   color: #fff;
   font-size: 16px;
   font-weight: 600;
@@ -69,39 +65,36 @@
   line-height: 1.3;
 }
 
-.movie-year {
+.favorite-year {
   color: #ccc;
   font-size: 14px;
   margin-bottom: 5px;
 }
 
-.movie-genre {
+.favorite-genre {
   color: #ff6b6b;
   font-size: 12px;
   margin-bottom: 10px;
 }
 
-.movie-rating {
+.favorite-rating {
   color: #ffd700;
   font-weight: 600;
   font-size: 14px;
 }
 
-.favorite-btn {
-  position: absolute;
-  bottom: -30px; /* Немного ниже карточки */
-  left: 50%;
-  transform: translateX(-50%);
-  padding: 8px 16px;
+.remove-btn {
+  width: 100%;
+  padding: 10px;
   border: none;
-  border-radius: 20px;
-  background: #ff6b6b; /* Красный для акцента */
+  border-radius: 0 0 12px 12px;
+  background: #ff6b6b;
   color: #fff;
   cursor: pointer;
   transition: background 0.3s ease;
 }
 
-.favorite-btn:hover {
+.remove-btn:hover {
   background: #ff8787;
 }
 
@@ -125,25 +118,24 @@
 }
 
 @media (max-width: 768px) {
-  .movies-grid {
+  .favorites-grid {
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     gap: 15px;
   }
   
-  .movie-image {
+  .favorite-image {
     height: 280px;
   }
   
-  .movie-info {
+  .favorite-info {
     padding: 15px;
   }
   
-  .movie-title {
+  .favorite-title {
     font-size: 14px;
   }
   
-  .favorite-btn {
-    bottom: -25px;
-    padding: 6px 12px;
+  .remove-btn {
+    padding: 8px;
   }
 }

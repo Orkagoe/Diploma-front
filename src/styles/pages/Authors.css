@@ -1,0 +1,72 @@
+/* src/styles/pages/Authors.css */
+.authors-page {
+  padding: 20px;
+  margin-top: 70px; /* Смещение из-за хедера */
+  background: #f0f0f0;
+  min-height: calc(100vh - 70px);
+  overflow-y: auto;
+}
+
+.authors-page h1 {
+  color: #333;
+  margin-bottom: 20px;
+  font-size: 24px;
+  text-align: center;
+}
+
+.authors-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr); /* 4 колонки как на Page 4 */
+  gap: 15px;
+  padding: 0 10px;
+}
+
+.author-card {
+  background: #4a4a4a; /* Темный фон как у профиля */
+  border-radius: 10px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.author-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.author-avatar {
+  width: 100%;
+  height: 150px;
+  overflow: hidden;
+}
+
+.author-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.author-details {
+  padding: 10px;
+  text-align: center;
+}
+
+.author-details h2 {
+  color: #fff;
+  margin-bottom: 5px;
+  font-size: 18px;
+}
+
+.author-details p {
+  color: #ccc;
+  font-size: 14px;
+}
+
+@media (max-width: 768px) {
+  .authors-grid {
+    grid-template-columns: repeat(2, 1fr); /* 2 колонки на мобильных */
+  }
+  .authors-page h1 {
+    font-size: 20px;
+  }
+}
