@@ -12,16 +12,26 @@ export const HistoryProvider = ({ children }) => {
 
   const addToHistory = (item) => {
     setHistory((prev) => {
-      const exists = prev.some((i) => i.id === item.id);
-      if (exists) {
-        console.log(`Фильм ${item.title} уже в истории`);
-        return prev; // Не добавляем дубли
+      const existsIndex = prev.findIndex((i) => i.id === item.id);
+      const newItem = { ...item, timestamp: Date.now() }; // Новый timestamp для текущего просмотра
+
+      if (existsIndex !== -1) {
+        // Если запись существует, обновляем её с новым timestamp и перемещаем в начало
+        const updated = [
+          newItem,
+          ...prev.slice(0, existsIndex),
+          ...prev.slice(existsIndex + 1),
+        ];
+        console.log(`Обновлено в истории: ${item.title} (ID: ${item.id})`);
+        localStorage.setItem(`history_${userId}`, JSON.stringify(updated));
+        return updated;
+      } else {
+        // Если записи нет, добавляем в начало
+        const updated = [newItem, ...prev].slice(0, 50); // Ограничиваем 50 записей
+        console.log(`Добавлено в историю: ${item.title} (ID: ${item.id})`);
+        localStorage.setItem(`history_${userId}`, JSON.stringify(updated));
+        return updated;
       }
-      const newItem = { ...item, timestamp: Date.now() }; // Добавляем временную метку
-      const updated = [newItem, ...prev].slice(0, 50); // Новые записи в начало, ограничиваем 50
-      localStorage.setItem(`history_${userId}`, JSON.stringify(updated));
-      console.log(`Добавлено в историю: ${item.title} (ID: ${item.id})`);
-      return updated;
     });
   };
 
