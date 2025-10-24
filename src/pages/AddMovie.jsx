@@ -1,70 +1,115 @@
-import React, { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { addMovieFromImdb } from '../utils/api'
-import '../styles/pages/AddMovie.css'
+import { useState, useEffect } from 'react';
+import axios from 'axios';
 
-const AddMovie = () => {
-  const [imdbId, setImdbId] = useState('')
-  const [message, setMessage] = useState('')
-  const [loading, setLoading] = useState(false)
-  const navigate = useNavigate()
+export default function AddMovie() {
+  const [title, setTitle] = useState('');
+  const [year, setYear] = useState('');
+  const [imdbId, setImdbId] = useState('');
+  const [genreId, setGenreId] = useState('');
+  const [genres, setGenres] = useState([]);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchGenres = async () => {
+      try {
+        const response = await axios.get('http://localhost:8080/genres');
+        setGenres(response.data);
+      } catch (err) {
+        setError('Failed to load genres');
+      }
+    };
+
+    fetchGenres();
+  }, []);
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
-    setLoading(true)
-    setMessage('')
+    e.preventDefault();
+    if (!title || !year || !imdbId || !genreId) {
+      setError('All fields are required');
+      return;
+    }
+
+    setLoading(true);
+    setError('');
+    setSuccess('');
 
     try {
-      const movie = await addMovieFromImdb(imdbId)
-      setMessage(`✅ Фильм "${movie.title}" успешно добавлен!`)
-      setImdbId('')
-    } catch (error) {
-      setMessage(`❌ Ошибка: ${error.message}`)
+      const response = await axios.post('http://localhost:8080/movies', {
+        title,
+        year: parseInt(year),
+        imdbId,
+        genreId: parseInt(genreId),
+      });
+      setSuccess(`Movie "${response.data.title}" added successfully`);
+      setTitle('');
+      setYear('');
+      setImdbId('');
+      setGenreId('');
+    } catch (err) {
+      setError('Failed to add movie');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <div className="add-movie">
-      <div className="add-movie-container">
-        <h1>🎬 Добавить фильм</h1>
-        <p>Введите IMDb ID для добавления фильма (например: tt0133093)</p>
-        
-        <form onSubmit={handleSubmit} className="add-movie-form">
-          <div className="form-group">
-            <input
-              type="text"
-              placeholder="IMDb ID"
-              value={imdbId}
-              onChange={(e) => setImdbId(e.target.value)}
-              required
-              disabled={loading}
-            />
-          </div>
-          
-          <button type="submit" disabled={loading}>
-            {loading ? 'Добавление...' : 'Добавить фильм'}
-          </button>
-        </form>
-        
-        {message && (
-          <div className={`message ${message.includes('✅') ? 'success' : 'error'}`}>
-            {message}
-          </div>
-        )}
-        
-        <div className="help-info">
-          <h3>ℹ️ Как найти IMDb ID?</h3>
-          <ul>
-            <li>Перейдите на сайт imdb.com</li>
-            <li>Найдите нужный фильм</li>
-            <li>Скопируйте ID из URL (например: tt0111161 для "Побег из Шоушенка")</li>
-          </ul>
+      <h1>Add a Movie</h1>
+      <form onSubmit={handleSubmit} className="form">
+        <div className="form-group">
+          <label htmlFor="title">Title</label>
+          <input
+            id="title"
+            type="text"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            className="input"
+          />
         </div>
-      </div>
+        <div className="form-group">
+          <label htmlFor="year">Year</label>
+          <input
+            id="year"
+            type="number"
+            value={year}
+            onChange={(e) => setYear(e.target.value)}
+            className="input"
+          />
+        </div>
+        <div className="form-group">
+          <label htmlFor="imdbId">IMDb ID</label>
+          <input
+            id="imdbId"
+            type="text"
+            value={imdbId}
+            onChange={(e) => setImdbId(e.target.value)}
+            className="input"
+          />
+        </div>
+        <div className="form-group">
+          <label htmlFor="genre">Genre</label>
+          <select
+            id="genre"
+            value={genreId}
+            onChange={(e) => setGenreId(e.target.value)}
+            className="input"
+          >
+            <option value="">Select a genre</option>
+            {genres.map((genre) => (
+              <option key={genre.id} value={genre.id}>
+                {genre.name}
+              </option>
+            ))}
+          </select>
+        </div>
+        <button type="submit" className="button" disabled={loading}>
+          {loading ? 'Adding...' : 'Add Movie'}
+        </button>
+      </form>
+      {error && <p className="error">{error}</p>}
+      {success && <p className="success">{success}</p>}
     </div>
-  )
+  );
 }
-
-export default AddMovie
