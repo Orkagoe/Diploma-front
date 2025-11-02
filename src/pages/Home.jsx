@@ -1,58 +1,24 @@
-import { useState } from 'react';
-import axios from 'axios';
+import React from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { useMovies } from '../hooks/useMovies';
+import MovieGrid from '../components/MovieGrid';
 
 export default function Home() {
-  const [imdbId, setImdbId] = useState('');
-  const [movie, setMovie] = useState(null);
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
+  const { data: movies = [], isLoading, isError, error } = useMovies();
+  const [searchParams] = useSearchParams();
+  const q = (searchParams.get('q') || '').toLowerCase();
 
-  const handleSearch = async () => {
-    if (!imdbId.trim()) {
-      setError('Please enter a valid IMDb ID');
-      return;
-    }
-
-    setLoading(true);
-    setError('');
-    setMovie(null);
-
-    try {
-      const response = await axios.get(`http://localhost:8080/api/movies/${imdbId}`);
-      setMovie(response.data);
-    } catch (err) {
-      setError('Failed to fetch movie. Please check the IMDb ID.');
-    } finally {
-      setLoading(false);
-    }
-  };
+  const filtered = movies.filter(m => {
+    if (!q) return true;
+    return m.title.toLowerCase().includes(q) || (m.genre || '').toLowerCase().includes(q);
+  });
 
   return (
-    <div className="home">
-      <h1>Search for a Movie</h1>
-      <div className="search-form">
-        <input
-          type="text"
-          value={imdbId}
-          onChange={(e) => setImdbId(e.target.value)}
-          placeholder="Enter IMDb ID (e.g., tt0111161)"
-          className="input"
-        />
-        <button onClick={handleSearch} className="button" disabled={loading}>
-          {loading ? 'Searching...' : 'Search'}
-        </button>
-      </div>
-      {error && <p className="error">{error}</p>}
-      {movie && (
-        <div className="movie-details">
-          <h2>{movie.title}</h2>
-          <p><strong>Year:</strong> {movie.year}</p>
-          <p><strong>Description:</strong> {movie.description}</p>
-          {movie.posterUrl && (
-            <img src={movie.posterUrl} alt={movie.title} className="poster" />
-          )}
-        </div>
-      )}
+    <div className="container">
+      <h1>Импортированные фильмы</h1>
+      {isLoading && <div className="loading">Загрузка...</div>}
+      {isError && <div className="error">Ошибка: {error.message}</div>}
+      {!isLoading && <MovieGrid movies={filtered} />}
     </div>
   );
 }

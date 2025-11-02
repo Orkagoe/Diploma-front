@@ -1,115 +1,49 @@
-import { useState, useEffect } from 'react';
-import axios from 'axios';
+// src/pages/AddMovie.jsx
+import React, { useState } from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { addFromImdb } from '../shared/api/movies';
 
 export default function AddMovie() {
-  const [title, setTitle] = useState('');
-  const [year, setYear] = useState('');
   const [imdbId, setImdbId] = useState('');
-  const [genreId, setGenreId] = useState('');
-  const [genres, setGenres] = useState([]);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [msg, setMsg] = useState('');
+  const qc = useQueryClient();
 
-  useEffect(() => {
-    const fetchGenres = async () => {
-      try {
-        const response = await axios.get('http://localhost:8080/genres');
-        setGenres(response.data);
-      } catch (err) {
-        setError('Failed to load genres');
-      }
-    };
+  const mutation = useMutation({
+    mutationFn: (id) => addFromImdb(id),
+    onSuccess: (data) => {
+      // v5: invalidate using object
+      qc.invalidateQueries({ queryKey: ['movies'] });
+      setMsg(`Фильм "${data?.title || data?.imdbId || id}" добавлен`);
+    },
+    onError: (err) => setMsg('Ошибка: ' + (err?.message || err)),
+  });
 
-    fetchGenres();
-  }, []);
-
-  const handleSubmit = async (e) => {
+  const submit = (e) => {
     e.preventDefault();
-    if (!title || !year || !imdbId || !genreId) {
-      setError('All fields are required');
+    const id = imdbId.trim();
+    if (!/^tt\d{7,8}$/.test(id)) {
+      setMsg('Неверный IMDb ID');
       return;
     }
-
-    setLoading(true);
-    setError('');
-    setSuccess('');
-
-    try {
-      const response = await axios.post('http://localhost:8080/movies', {
-        title,
-        year: parseInt(year),
-        imdbId,
-        genreId: parseInt(genreId),
-      });
-      setSuccess(`Movie "${response.data.title}" added successfully`);
-      setTitle('');
-      setYear('');
-      setImdbId('');
-      setGenreId('');
-    } catch (err) {
-      setError('Failed to add movie');
-    } finally {
-      setLoading(false);
-    }
+    mutation.mutate(id);
+    setImdbId('');
   };
 
   return (
-    <div className="add-movie">
-      <h1>Add a Movie</h1>
-      <form onSubmit={handleSubmit} className="form">
-        <div className="form-group">
-          <label htmlFor="title">Title</label>
-          <input
-            id="title"
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            className="input"
-          />
-        </div>
-        <div className="form-group">
-          <label htmlFor="year">Year</label>
-          <input
-            id="year"
-            type="number"
-            value={year}
-            onChange={(e) => setYear(e.target.value)}
-            className="input"
-          />
-        </div>
-        <div className="form-group">
-          <label htmlFor="imdbId">IMDb ID</label>
-          <input
-            id="imdbId"
-            type="text"
-            value={imdbId}
-            onChange={(e) => setImdbId(e.target.value)}
-            className="input"
-          />
-        </div>
-        <div className="form-group">
-          <label htmlFor="genre">Genre</label>
-          <select
-            id="genre"
-            value={genreId}
-            onChange={(e) => setGenreId(e.target.value)}
-            className="input"
-          >
-            <option value="">Select a genre</option>
-            {genres.map((genre) => (
-              <option key={genre.id} value={genre.id}>
-                {genre.name}
-              </option>
-            ))}
-          </select>
-        </div>
-        <button type="submit" className="button" disabled={loading}>
-          {loading ? 'Adding...' : 'Add Movie'}
+    <div className="container">
+      <h1>Добавить фильм по IMDb ID</h1>
+      <form onSubmit={submit} className="imdb-import">
+        <input
+          className="input"
+          value={imdbId}
+          onChange={(e) => setImdbId(e.target.value)}
+          placeholder="tt1234567"
+        />
+        <button className="button" disabled={mutation.isLoading}>
+          {mutation.isLoading ? 'Импорт...' : 'Импортировать'}
         </button>
       </form>
-      {error && <p className="error">{error}</p>}
-      {success && <p className="success">{success}</p>}
+      {msg && <p className="status-message">{msg}</p>}
     </div>
   );
 }

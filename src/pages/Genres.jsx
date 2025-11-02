@@ -1,43 +1,27 @@
-import { useEffect, useState } from 'react';
-import axios from 'axios';
+import React, { useState } from 'react';
+import { useGenres } from '../hooks/useGenres';
+import { useMovies } from '../hooks/useMovies';
+import MovieGrid from '../components/MovieGrid';
 
 export default function Genres() {
-  const [genres, setGenres] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const { data: genres = [] } = useGenres();
+  const { data: movies = [] } = useMovies();
+  const [selected, setSelected] = useState(null);
 
-  useEffect(() => {
-    const fetchGenres = async () => {
-      try {
-        const response = await axios.get('http://localhost:8080/genres');
-        setGenres(response.data);
-      } catch (err) {
-        setError('Failed to load genres');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchGenres();
-  }, []);
-
-  if (loading) return <p>Loading genres...</p>;
-  if (error) return <p className="error">{error}</p>;
+  const filtered = selected ? movies.filter(m => (m.genre || '').toLowerCase().includes(selected.toLowerCase())) : movies;
 
   return (
-    <div className="genres">
-      <h1>Genres</h1>
-      {genres.length === 0 ? (
-        <p>No genres available.</p>
-      ) : (
-        <ul className="genre-list">
-          {genres.map((genre) => (
-            <li key={genre.id} className="genre-item">
-              {genre.name}
-            </li>
-          ))}
-        </ul>
-      )}
+    <div className="container">
+      <h1>Жанры</h1>
+      <div className="genres-row">
+        {genres.map(g => (
+          <button key={g.id} className={`chip ${selected===g.name ? 'active' : ''}`} onClick={()=>setSelected(selected===g.name?null:g.name)}>
+            {g.name}
+          </button>
+        ))}
+      </div>
+
+      <MovieGrid movies={filtered} />
     </div>
   );
 }
