@@ -1,7 +1,10 @@
+// src/App.jsx
 import React from 'react';
-import { Routes, Route, Link, Outlet } from 'react-router-dom';
+import { Routes, Route, Outlet } from 'react-router-dom';
 import Header from './components/Header';
 import Sidebar from './components/Sidebar';
+
+// основные страницы
 import Home from './pages/Home';
 import Genres from './pages/Genres';
 import AddMovie from './pages/AddMovie';
@@ -9,24 +12,49 @@ import MovieDetails from './pages/MovieDetails';
 import Favorites from './pages/Favorites';
 import History from './pages/History';
 
-export default function App() {
+// новые страницы
+import AdminAnalytics from './pages/AdminAnalytics';
+import MerchPage from './pages/MerchPage';
+import ProfilePage from './pages/ProfilePage';
+import SettingsPage from './pages/SettingsPage';
+import SubscriptionPage from './pages/SubscriptionPage';
+
+function Layout() {
   return (
     <div className="app">
       <Header />
       <div className="layout">
-        <aside className="sidebar"><Sidebar/></aside>
-        <main className="main"><Outlet /></main>
+        <aside className="sidebar"><Sidebar /></aside>
+        <main className="main">
+          <React.Suspense fallback={<p>Загрузка...</p>}>
+            <Outlet />
+          </React.Suspense>
+        </main>
       </div>
-
-      <Routes>
-        <Route path="/" element={<Home/>} />
-        <Route path="/add-movie" element={<AddMovie/>} />
-        <Route path="/genres" element={<Genres/>} />
-        <Route path="/movie/:imdbId" element={<MovieDetails/>} />
-        <Route path="/favorites" element={<Favorites/>} />
-        <Route path="/history" element={<History/>} />
-        <Route path="*" element={<Home/>} />
-      </Routes>
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <Routes>
+      <Route element={<Layout />}>
+        <Route path="/" element={<Home />} />
+        <Route path="/add-movie" element={<AddMovie />} />
+        <Route path="/genres" element={<Genres />} />
+        <Route path="/movie/:imdbId" element={<MovieDetails />} />
+        <Route path="/favorites" element={<Favorites />} />
+        <Route path="/history" element={<History />} />
+
+        {/* Новые страницы */}
+        <Route path="/analytics" element={<AdminAnalytics />} />
+        <Route path="/merch" element={<MerchPage />} />
+        <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/settings" element={<SettingsPage />} />
+        <Route path="/subscription" element={<SubscriptionPage />} />
+
+        <Route path="*" element={<Home />} />
+      </Route>
+    </Routes>
   );
 }
