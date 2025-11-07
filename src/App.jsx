@@ -1,4 +1,3 @@
-// src/App.jsx
 import React from 'react';
 import { Routes, Route, Outlet } from 'react-router-dom';
 import Header from './components/Header';
@@ -14,10 +13,11 @@ import History from './pages/History';
 
 // новые страницы
 import AdminAnalytics from './pages/AdminAnalytics';
-import MerchPage from './pages/MerchPage';
 import ProfilePage from './pages/ProfilePage';
 import SettingsPage from './pages/SettingsPage';
 import SubscriptionPage from './pages/SubscriptionPage';
+import Login from './pages/Login';
+import Register from './pages/Register';
 
 function Layout() {
   return (
@@ -46,13 +46,17 @@ export default function App() {
         <Route path="/favorites" element={<Favorites />} />
         <Route path="/history" element={<History />} />
 
-        {/* Новые страницы */}
+        {/* защищённые / дополнительные страницы */}
         <Route path="/analytics" element={<AdminAnalytics />} />
-        <Route path="/merch" element={<MerchPage />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/settings" element={<SettingsPage />} />
         <Route path="/subscription" element={<SubscriptionPage />} />
 
+        {/* аутентификация */}
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+
+        {/* fallback */}
         <Route path="*" element={<Home />} />
       </Route>
     </Routes>
