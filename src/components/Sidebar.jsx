@@ -11,7 +11,6 @@ const items = [
   { to: "/settings", label: "Настройки" },
   { to: "/subscription", label: "Подписка" },
   { to: "/analytics", label: "Аналитика" },
-  { to: "/merch", label: "Мерч" },
 ];
 
 export default function Sidebar() {

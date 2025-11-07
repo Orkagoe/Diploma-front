@@ -1,27 +1,79 @@
 // src/pages/MovieDetails.jsx
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useMovie } from '../hooks/useMovie';
 import { useHistoryStorage } from '../utils/localHistory';
+import { useAuth } from '../hooks/useAuth';
+import { useQueryClient, useMutation, useQuery } from '@tanstack/react-query';
+import { getMyFavorites, addFavoriteByImdb, removeFavoriteByImdb } from '../shared/api/favorites';
 
 export default function MovieDetails() {
   const { imdbId } = useParams();
   const navigate = useNavigate();
   const { data: movie, isLoading, isError, error } = useMovie(imdbId);
   const { push, read } = useHistoryStorage();
+  const { user } = useAuth(); // { token, username, role } or null
+  const username = user?.username ?? null;
+  const qc = useQueryClient();
 
-  // favorites stored as array of imdbId under key 'favorites_guest'
-  const favKey = 'favorites_guest';
-  const [favorites, setFavorites] = useState(() => {
-    try {
-      const raw = localStorage.getItem(favKey);
-      return raw ? JSON.parse(raw) : [];
-    } catch {
-      return [];
-    }
+  // local fallback key
+  const localKey = (u = 'guest') => `favorites_${u}`;
+
+  // --- remote favorites (only when logged) ---
+  const { data: remoteFavs = [], isLoading: remoteLoading } = useQuery({
+    queryKey: ['favorites', username],
+    queryFn: async () => {
+      if (!username) return [];
+      const data = await getMyFavorites();
+      return Array.isArray(data) ? data.map(m => m.imdbId ?? m.imdbID ?? null).filter(Boolean) : [];
+    },
+    enabled: !!username,
+    staleTime: 1000 * 30,
   });
 
-  // push into local history when movie data is available
+  const addMut = useMutation({
+    mutationFn: (id) => addFavoriteByImdb(id),
+    onMutate: async (id) => {
+      await qc.cancelQueries({ queryKey: ['favorites', username] });
+      const prev = qc.getQueryData(['favorites', username]) || [];
+      qc.setQueryData(['favorites', username], (old = []) => (old.includes(id) ? old : [id, ...old]));
+      return { prev };
+    },
+    onError: (err, id, context) => {
+      if (context?.prev) qc.setQueryData(['favorites', username], context.prev);
+    },
+    onSettled: () => qc.invalidateQueries({ queryKey: ['favorites', username] }),
+  });
+
+  const delMut = useMutation({
+    mutationFn: (id) => removeFavoriteByImdb(id),
+    onMutate: async (id) => {
+      await qc.cancelQueries({ queryKey: ['favorites', username] });
+      const prev = qc.getQueryData(['favorites', username]) || [];
+      qc.setQueryData(['favorites', username], (old = []) => old.filter(x => x !== id));
+      return { prev };
+    },
+    onError: (err, id, context) => {
+      if (context?.prev) qc.setQueryData(['favorites', username], context.prev);
+    },
+    onSettled: () => qc.invalidateQueries({ queryKey: ['favorites', username] }),
+  });
+
+  // --- local favorites (guest) ---
+  const [localFavs, setLocalFavs] = useState(() => {
+    try {
+      const raw = localStorage.getItem(localKey());
+      return raw ? JSON.parse(raw) : [];
+    } catch { return []; }
+  });
+
+  useEffect(() => {
+    if (!username) {
+      try { localStorage.setItem(localKey(), JSON.stringify(localFavs)); } catch {}
+    }
+  }, [localFavs, username]);
+
+  // push to local history when movie loaded
   useEffect(() => {
     if (!movie) return;
     push({
@@ -30,54 +82,51 @@ export default function MovieDetails() {
       posterUrl: movie.poster || '',
       timestamp: Date.now(),
     });
-    // update document title for UX
     document.title = `${movie.title} — Cinema App`;
   }, [movie, push]);
 
-  // helper to toggle favorite
+  // effective favorites list (remote if logged else local)
+  const favs = username ? (remoteFavs || []) : localFavs;
+
+  // memoized check
+  const isFavorite = useMemo(() => movie && favs.includes(movie.imdbId), [movie, favs]);
+
+  // toggle handler (remote when logged)
   const toggleFavorite = () => {
     if (!movie) return;
-    setFavorites((prev) => {
-      const exists = prev.includes(movie.imdbId);
-      let updated;
-      if (exists) {
-        updated = prev.filter((id) => id !== movie.imdbId);
+    const id = movie.imdbId;
+    if (username) {
+      if (favs.includes(id)) {
+        delMut.mutate(id);
       } else {
-        updated = [movie.imdbId, ...prev];
+        addMut.mutate(id);
       }
-      try {
-        localStorage.setItem(favKey, JSON.stringify(updated));
-      } catch (e) {
-        // eslint-disable-next-line no-console
-        console.warn('Failed to save favorites', e);
-      }
+      return;
+    }
+
+    // guest local toggle
+    setLocalFavs(prev => {
+      const exists = prev.includes(id);
+      const updated = exists ? prev.filter(x => x !== id) : [id, ...prev];
+      try { localStorage.setItem(localKey(), JSON.stringify(updated)); } catch {}
       return updated;
     });
   };
 
-  // get last viewed info for this imdbId from local history
   const lastViewedEntry = (() => {
     try {
       const list = read();
       return list.find((i) => i.imdbId === imdbId);
-    } catch {
-      return null;
-    }
+    } catch { return null; }
   })();
 
   const formatTimestamp = (ts) => {
     try {
       return new Date(ts).toLocaleString('ru-RU', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-        timeZone: 'Asia/Almaty',
+        day: '2-digit', month: '2-digit', year: 'numeric',
+        hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Almaty'
       });
-    } catch {
-      return '';
-    }
+    } catch { return ''; }
   };
 
   if (isLoading) return <div className="loading container">Загрузка фильма...</div>;
@@ -118,16 +167,17 @@ export default function MovieDetails() {
           />
 
           <div style={{ marginTop: 12, display: 'flex', gap: 8 }}>
-            <button className="button" onClick={toggleFavorite}>
-              {favorites.includes(movie.imdbId) ? '✓ В избранном' : 'Добавить в избранное'}
+            <button
+              className="button"
+              onClick={toggleFavorite}
+              disabled={addMut.isLoading || delMut.isLoading}
+            >
+              {isFavorite ? '✓ В избранном' : 'Добавить в избранное'}
             </button>
 
             <button
               className="button button--ghost"
-              onClick={() => {
-                // пример: можно в будущем стартовать сессию просмотра
-                alert('Функция «Смотреть» пока не реализована (плеер).');
-              }}
+              onClick={() => alert('Функция «Смотреть» пока не реализована (плеер).')}
             >
               ▶ Смотреть
             </button>
@@ -159,9 +209,7 @@ export default function MovieDetails() {
 
           {lastViewedEntry && (
             <div style={{ marginTop: 14, color: 'var(--muted)' }}>
-              <small>
-                Последний просмотр: {formatTimestamp(lastViewedEntry.timestamp)}
-              </small>
+              <small>Последний просмотр: {formatTimestamp(lastViewedEntry.timestamp)}</small>
             </div>
           )}
         </div>
