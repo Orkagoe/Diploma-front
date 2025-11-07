@@ -1,40 +1,47 @@
+// src/pages/Login.jsx
 import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
-import { login as apiLogin } from '../shared/api/auth';
 import { useAuth } from '../hooks/useAuth';
+import { login as apiLogin } from '../shared/api/auth'; // должен возвращать { token, username, role? }
 
 export default function Login() {
   const nav = useNavigate();
   const loc = useLocation();
   const { login } = useAuth();
   const [form, setForm] = useState({ username: '', password: '' });
+
   const from = loc.state?.from?.pathname || '/';
 
-  const m = useMutation({
-    mutationFn: apiLogin,
+  const mutation = useMutation({
+    mutationFn: () => apiLogin(form),
     onSuccess: (data) => {
-      const role = data.role || 'ROLE_USER';
-      login(data.token, data.username, role);
+      const token = data?.token || data?.accessToken;
+      const username = data?.username || form.username;
+      const role = data?.role || 'ROLE_USER';
+      if (!token) {
+        return mutation.reset() && alert('Сервер не вернул токен');
+      }
+      login(token, username, role);
       nav(from, { replace: true });
     },
   });
 
   const submit = (e) => {
     e.preventDefault();
-    m.mutate(form);
+    mutation.mutate();
   };
 
   return (
-    <div className="container">
+    <div className="container" style={{ maxWidth: 420, margin: '0 auto' }}>
       <h1>Вход</h1>
-      {m.error && <p className="error">{m.error.message}</p>}
-      <form onSubmit={submit} className="auth-form">
+      {mutation.isError && <div className="error" style={{ color: 'crimson' }}>{mutation.error.message}</div>}
+      <form onSubmit={submit} className="auth-form" style={{ display: 'grid', gap: 10 }}>
         <input
           className="input"
           placeholder="Логин"
           value={form.username}
-          onChange={(e)=>setForm({...form, username: e.target.value})}
+          onChange={(e) => setForm({ ...form, username: e.target.value })}
           autoComplete="username"
           required
         />
@@ -43,12 +50,21 @@ export default function Login() {
           type="password"
           placeholder="Пароль"
           value={form.password}
-          onChange={(e)=>setForm({...form, password: e.target.value})}
+          onChange={(e) => setForm({ ...form, password: e.target.value })}
           autoComplete="current-password"
           required
         />
-        <button className="button" disabled={m.isLoading}>{m.isLoading ? 'Входим...' : 'Войти'}</button>
+        <button className="button" type="submit" disabled={mutation.isLoading}>
+          {mutation.isLoading ? 'Входим...' : 'Войти'}
+        </button>
       </form>
+
+      <div style={{ marginTop: 12 }}>
+        <small>
+          Нет аккаунта?&nbsp;
+          <Link to="/register" state={{ from }}>Зарегистрироваться</Link>
+        </small>
+      </div>
     </div>
   );
 }
