@@ -3,14 +3,14 @@ import React, { useState } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
 import { useAuth } from '../hooks/useAuth';
-import { login as apiLogin } from '../shared/api/auth'; // должен возвращать { token, username, role? }
+import { login as apiLogin } from '../shared/api/auth';
+import '../styles/pages/Auth.css';
 
 export default function Login() {
   const nav = useNavigate();
   const loc = useLocation();
   const { login } = useAuth();
   const [form, setForm] = useState({ username: '', password: '' });
-
   const from = loc.state?.from?.pathname || '/';
 
   const mutation = useMutation({
@@ -19,24 +19,19 @@ export default function Login() {
       const token = data?.token || data?.accessToken;
       const username = data?.username || form.username;
       const role = data?.role || 'ROLE_USER';
-      if (!token) {
-        return mutation.reset() && alert('Сервер не вернул токен');
-      }
+      if (!token) return alert('Сервер не вернул токен');
       login(token, username, role);
       nav(from, { replace: true });
     },
   });
 
-  const submit = (e) => {
-    e.preventDefault();
-    mutation.mutate();
-  };
+  const submit = (e) => { e.preventDefault(); mutation.mutate(); };
 
   return (
-    <div className="container" style={{ maxWidth: 420, margin: '0 auto' }}>
+    <div className="container auth-page">
       <h1>Вход</h1>
-      {mutation.isError && <div className="error" style={{ color: 'crimson' }}>{mutation.error.message}</div>}
-      <form onSubmit={submit} className="auth-form" style={{ display: 'grid', gap: 10 }}>
+      {mutation.isError && <div className="error">{mutation.error.message}</div>}
+      <form onSubmit={submit} className="auth-form">
         <input
           className="input"
           placeholder="Логин"
@@ -55,14 +50,13 @@ export default function Login() {
           required
         />
         <button className="button" type="submit" disabled={mutation.isLoading}>
-          {mutation.isLoading ? 'Входим...' : 'Войти'}
+          {mutation.isLoading ? 'Входим…' : 'Войти'}
         </button>
       </form>
 
-      <div style={{ marginTop: 12 }}>
+      <div className="auth-switch">
         <small>
-          Нет аккаунта?&nbsp;
-          <Link to="/register" state={{ from }}>Зарегистрироваться</Link>
+          Нет аккаунта? <Link to="/register" state={{ from }}>Зарегистрироваться</Link>
         </small>
       </div>
     </div>

@@ -1,8 +1,10 @@
+// src/pages/Register.jsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
 import { register as apiRegister } from '../shared/api/auth';
 import { useAuth } from '../hooks/useAuth';
+import '../styles/pages/Auth.css';
 
 export default function Register() {
   const nav = useNavigate();
@@ -18,13 +20,10 @@ export default function Register() {
     },
   });
 
-  const submit = (e) => {
-    e.preventDefault();
-    m.mutate(form);
-  };
+  const submit = (e) => { e.preventDefault(); m.mutate(form); };
 
   return (
-    <div className="container">
+    <div className="container auth-page">
       <h1>Регистрация</h1>
       {m.error && <p className="error">{m.error.message}</p>}
       <form onSubmit={submit} className="auth-form">
@@ -45,7 +44,9 @@ export default function Register() {
           autoComplete="new-password"
           required
         />
-        <button className="button" disabled={m.isLoading}>{m.isLoading ? 'Создаём...' : 'Создать аккаунт'}</button>
+        <button className="button" disabled={m.isLoading}>
+          {m.isLoading ? 'Создаём…' : 'Создать аккаунт'}
+        </button>
       </form>
     </div>
   );

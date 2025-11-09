@@ -1,7 +1,9 @@
+// src/pages/Home.jsx
 import React from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useMovies } from '../hooks/useMovies';
 import MovieGrid from '../components/MovieGrid';
+import '../styles/pages/Home.css';
 
 export default function Home() {
   const { data: movies = [], isLoading, isError, error } = useMovies();
@@ -14,9 +16,9 @@ export default function Home() {
   });
 
   return (
-    <div className="container">
+    <div className="container home-page">
       <h1>Импортированные фильмы</h1>
-      {isLoading && <div className="loading">Загрузка...</div>}
+      {isLoading && <div className="loading">Загрузка…</div>}
       {isError && <div className="error">Ошибка: {error.message}</div>}
       {!isLoading && <MovieGrid movies={filtered} />}
     </div>

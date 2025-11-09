@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { addFromImdb } from '../shared/api/movies';
+import '../styles/pages/AddMovie.css';
 
 export default function AddMovie() {
   const [imdbId, setImdbId] = useState('');
@@ -11,9 +12,9 @@ export default function AddMovie() {
   const mutation = useMutation({
     mutationFn: (id) => addFromImdb(id),
     onSuccess: (data) => {
-      // v5: invalidate using object
       qc.invalidateQueries({ queryKey: ['movies'] });
-      setMsg(`Фильм "${data?.title || data?.imdbId || id}" добавлен`);
+      setMsg(`Фильм "${data?.title || data?.imdbId || imdbId}" добавлен`);
+      setImdbId('');
     },
     onError: (err) => setMsg('Ошибка: ' + (err?.message || err)),
   });
@@ -26,12 +27,12 @@ export default function AddMovie() {
       return;
     }
     mutation.mutate(id);
-    setImdbId('');
   };
 
   return (
-    <div className="container">
+    <div className="addmovie-page container">
       <h1>Добавить фильм по IMDb ID</h1>
+
       <form onSubmit={submit} className="imdb-import">
         <input
           className="input"
@@ -40,10 +41,11 @@ export default function AddMovie() {
           placeholder="tt1234567"
         />
         <button className="button" disabled={mutation.isLoading}>
-          {mutation.isLoading ? 'Импорт...' : 'Импортировать'}
+          {mutation.isLoading ? 'Импорт…' : 'Импортировать'}
         </button>
       </form>
-      {msg && <p className="status-message">{msg}</p>}
+
+      {msg && <p className="status-message" role="status">{msg}</p>}
     </div>
   );
 }

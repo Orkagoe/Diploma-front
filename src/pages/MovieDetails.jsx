@@ -2,24 +2,21 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useMovie } from '../hooks/useMovie';
-import { useHistoryStorage } from '../utils/localHistory';
 import { useAuth } from '../hooks/useAuth';
 import { useQueryClient, useMutation, useQuery } from '@tanstack/react-query';
 import { getMyFavorites, addFavoriteByImdb, removeFavoriteByImdb } from '../shared/api/favorites';
+import '../styles/pages/MovieDetails.css';
 
 export default function MovieDetails() {
   const { imdbId } = useParams();
   const navigate = useNavigate();
   const { data: movie, isLoading, isError, error } = useMovie(imdbId);
-  const { push, read } = useHistoryStorage();
-  const { user } = useAuth(); // { token, username, role } or null
+  const { user } = useAuth();
   const username = user?.username ?? null;
   const qc = useQueryClient();
 
-  // local fallback key
   const localKey = (u = 'guest') => `favorites_${u}`;
 
-  // --- remote favorites (only when logged) ---
   const { data: remoteFavs = [], isLoading: remoteLoading } = useQuery({
     queryKey: ['favorites', username],
     queryFn: async () => {
@@ -28,7 +25,7 @@ export default function MovieDetails() {
       return Array.isArray(data) ? data.map(m => m.imdbId ?? m.imdbID ?? null).filter(Boolean) : [];
     },
     enabled: !!username,
-    staleTime: 1000 * 30,
+    staleTime: 30_000,
   });
 
   const addMut = useMutation({
@@ -39,9 +36,7 @@ export default function MovieDetails() {
       qc.setQueryData(['favorites', username], (old = []) => (old.includes(id) ? old : [id, ...old]));
       return { prev };
     },
-    onError: (err, id, context) => {
-      if (context?.prev) qc.setQueryData(['favorites', username], context.prev);
-    },
+    onError: (_e, _id, ctx) => { if (ctx?.prev) qc.setQueryData(['favorites', username], ctx.prev); },
     onSettled: () => qc.invalidateQueries({ queryKey: ['favorites', username] }),
   });
 
@@ -53,83 +48,28 @@ export default function MovieDetails() {
       qc.setQueryData(['favorites', username], (old = []) => old.filter(x => x !== id));
       return { prev };
     },
-    onError: (err, id, context) => {
-      if (context?.prev) qc.setQueryData(['favorites', username], context.prev);
-    },
+    onError: (_e, _id, ctx) => { if (ctx?.prev) qc.setQueryData(['favorites', username], ctx.prev); },
     onSettled: () => qc.invalidateQueries({ queryKey: ['favorites', username] }),
   });
 
-  // --- local favorites (guest) ---
   const [localFavs, setLocalFavs] = useState(() => {
-    try {
-      const raw = localStorage.getItem(localKey());
-      return raw ? JSON.parse(raw) : [];
-    } catch { return []; }
+    try { return JSON.parse(localStorage.getItem(localKey()) || '[]'); } catch { return []; }
   });
+  useEffect(() => { if (!username) try { localStorage.setItem(localKey(), JSON.stringify(localFavs)); } catch {} }, [localFavs, username]);
 
-  useEffect(() => {
-    if (!username) {
-      try { localStorage.setItem(localKey(), JSON.stringify(localFavs)); } catch {}
-    }
-  }, [localFavs, username]);
+  useEffect(() => { if (movie) document.title = `${movie.title} — Cinema App`; }, [movie]);
 
-  // push to local history when movie loaded
-  useEffect(() => {
-    if (!movie) return;
-    push({
-      imdbId: movie.imdbId,
-      title: movie.title,
-      posterUrl: movie.poster || '',
-      timestamp: Date.now(),
-    });
-    document.title = `${movie.title} — Cinema App`;
-  }, [movie, push]);
-
-  // effective favorites list (remote if logged else local)
   const favs = username ? (remoteFavs || []) : localFavs;
-
-  // memoized check
   const isFavorite = useMemo(() => movie && favs.includes(movie.imdbId), [movie, favs]);
 
-  // toggle handler (remote when logged)
   const toggleFavorite = () => {
     if (!movie) return;
     const id = movie.imdbId;
-    if (username) {
-      if (favs.includes(id)) {
-        delMut.mutate(id);
-      } else {
-        addMut.mutate(id);
-      }
-      return;
-    }
-
-    // guest local toggle
-    setLocalFavs(prev => {
-      const exists = prev.includes(id);
-      const updated = exists ? prev.filter(x => x !== id) : [id, ...prev];
-      try { localStorage.setItem(localKey(), JSON.stringify(updated)); } catch {}
-      return updated;
-    });
+    if (username) return favs.includes(id) ? delMut.mutate(id) : addMut.mutate(id);
+    setLocalFavs(prev => prev.includes(id) ? prev.filter(x => x !== id) : [id, ...prev]);
   };
 
-  const lastViewedEntry = (() => {
-    try {
-      const list = read();
-      return list.find((i) => i.imdbId === imdbId);
-    } catch { return null; }
-  })();
-
-  const formatTimestamp = (ts) => {
-    try {
-      return new Date(ts).toLocaleString('ru-RU', {
-        day: '2-digit', month: '2-digit', year: 'numeric',
-        hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Almaty'
-      });
-    } catch { return ''; }
-  };
-
-  if (isLoading) return <div className="loading container">Загрузка фильма...</div>;
+  if (isLoading) return <div className="loading container">Загрузка фильма…</div>;
   if (isError) {
     return (
       <div className="container">
@@ -138,7 +78,6 @@ export default function MovieDetails() {
       </div>
     );
   }
-
   if (!movie) {
     return (
       <div className="container">
@@ -148,16 +87,14 @@ export default function MovieDetails() {
     );
   }
 
-  const posterSrc =
-    movie.poster ||
-    `https://via.placeholder.com/400x600/333/fff?text=${encodeURIComponent(movie.title)}`;
+  const posterSrc = movie.poster || `https://via.placeholder.com/400x600/333/fff?text=${encodeURIComponent(movie.title)}`;
 
   return (
-    <div className="container movie-details-page">
+    <div className="container details-page">
       <Link to="/" className="back-link">← Назад</Link>
 
       <div className="details-layout">
-        <div>
+        <div className="left">
           <img
             className="details-poster"
             src={posterSrc}
@@ -166,19 +103,16 @@ export default function MovieDetails() {
             onError={(e) => { e.currentTarget.src = 'https://via.placeholder.com/400x600/333/fff?text=No+Image'; }}
           />
 
-          <div style={{ marginTop: 12, display: 'flex', gap: 8 }}>
+          <div className="actions">
             <button
               className="button"
               onClick={toggleFavorite}
-              disabled={addMut.isLoading || delMut.isLoading}
+              disabled={addMut.isLoading || delMut.isLoading || remoteLoading}
             >
               {isFavorite ? '✓ В избранном' : 'Добавить в избранное'}
             </button>
 
-            <button
-              className="button button--ghost"
-              onClick={() => alert('Функция «Смотреть» пока не реализована (плеер).')}
-            >
+            <button className="button button--ghost" onClick={() => alert('Плеер ещё не готов.')}>
               ▶ Смотреть
             </button>
           </div>
@@ -187,31 +121,22 @@ export default function MovieDetails() {
         <div className="details-info">
           <h2>{movie.title}</h2>
 
-          <div style={{ marginBottom: 8 }}>
-            <strong>Год:</strong> {movie.year ?? '—'} &nbsp;·&nbsp;
-            <strong>Жанр:</strong> {movie.genre || '—'} &nbsp;·&nbsp;
-            <strong>IMDb:</strong> {movie.imdbRating ?? '—'}
+          <div className="meta">
+            <strong>Год:</strong> {movie.year ?? '—'} · <strong>Жанр:</strong> {movie.genre || '—'} · <strong>IMDb:</strong> {movie.imdbRating ?? '—'}
           </div>
 
-          <p style={{ whiteSpace: 'pre-line' }}>
-            <strong>Описание:</strong>
-            <br />
+          <p className="description">
+            <strong>Описание:</strong><br />
             {movie.description || 'Описание отсутствует.'}
           </p>
 
-          <div style={{ marginTop: 12 }}>
+          <div className="more">
             <p><strong>Длительность:</strong> {movie.runtime ?? '—'}</p>
             <p><strong>Режиссёр:</strong> {movie.raw?.director || movie.raw?.Director || '—'}</p>
             <p><strong>Актёры:</strong> {movie.raw?.actors || movie.raw?.Actors || '—'}</p>
             <p><strong>Язык:</strong> {movie.raw?.language || movie.raw?.Language || '—'}</p>
             <p><strong>Страна:</strong> {movie.raw?.country || movie.raw?.Country || '—'}</p>
           </div>
-
-          {lastViewedEntry && (
-            <div style={{ marginTop: 14, color: 'var(--muted)' }}>
-              <small>Последний просмотр: {formatTimestamp(lastViewedEntry.timestamp)}</small>
-            </div>
-          )}
         </div>
       </div>
     </div>

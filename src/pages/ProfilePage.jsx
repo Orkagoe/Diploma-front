@@ -1,6 +1,8 @@
-import React, { useState, useEffect } from 'react';
+// src/pages/ProfilePage.jsx
+import React, { useEffect, useState } from 'react';
 import { useUserProfile } from '../hooks/useUserProfile';
 import { useAuth } from '../hooks/useAuth';
+import '../styles/pages/Profile.css';
 
 export default function ProfilePage() {
   const { user } = useAuth();
@@ -20,39 +22,42 @@ export default function ProfilePage() {
   }, [data]);
 
   const onSave = async () => {
-    try {
-      await saveProfile(form);
-      alert('Профиль сохранён');
-    } catch (e) {
-      alert('Ошибка: ' + e.message);
-    }
+    try { await saveProfile(form); } catch {}
   };
 
-  if (!username) return <p>Войдите для управления профилем</p>;
-  if (isLoading) return <p>Загрузка...</p>;
-  if (isError) return <p>Ошибка</p>;
+  if (!username) return <div className="container profile-page"><p>Войдите для управления профилем</p></div>;
+  if (isLoading) return <div className="container profile-page"><p>Загрузка…</p></div>;
+  if (isError) return <div className="container profile-page"><p>Ошибка загрузки</p></div>;
 
   return (
     <div className="container profile-page">
       <h1>Профиль</h1>
-      <label>
-        Имя
-        <input value={form.displayName} onChange={(e) => setForm({...form, displayName: e.target.value})} />
-      </label>
-      <label>
-        Email
-        <input value={form.email} onChange={(e) => setForm({...form, email: e.target.value})} />
-      </label>
-      <label>
-        Аватар URL
-        <input value={form.avatarUrl} onChange={(e) => setForm({...form, avatarUrl: e.target.value})} />
-      </label>
-      <label>
-        Любимые жанры (через запятую)
-        <input value={(form.favoriteGenres || []).join(', ')} onChange={(e) => setForm({...form, favoriteGenres: e.target.value.split(',').map(s => s.trim())})} />
-      </label>
-      <div style={{ marginTop: 12 }}>
-        <button onClick={onSave} className="button">Сохранить профиль</button>
+
+      <div className="profile-form">
+        <label>
+          Имя
+          <input className="input" value={form.displayName} onChange={(e) => setForm({...form, displayName: e.target.value})} />
+        </label>
+        <label>
+          Email
+          <input className="input" value={form.email} onChange={(e) => setForm({...form, email: e.target.value})} />
+        </label>
+        <label>
+          Аватар URL
+          <input className="input" value={form.avatarUrl} onChange={(e) => setForm({...form, avatarUrl: e.target.value})} />
+        </label>
+        <label>
+          Любимые жанры (через запятую)
+          <input
+            className="input"
+            value={(form.favoriteGenres || []).join(', ')}
+            onChange={(e) => setForm({...form, favoriteGenres: e.target.value.split(',').map(s => s.trim())})}
+          />
+        </label>
+
+        <div className="actions">
+          <button onClick={onSave} className="button">Сохранить профиль</button>
+        </div>
       </div>
     </div>
   );

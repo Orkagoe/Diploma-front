@@ -1,0 +1,12 @@
+/* src/styles/pages/AdminAnalytics.css */
+.analytics-page h1 { color: var(--text); margin-bottom: 16px; }
+.table-wrap { overflow: auto; border: 1px solid var(--border); border-radius: var(--radius); }
+.analytics-table { width: 100%; border-collapse: collapse; background: var(--bg-elev); }
+.analytics-table th, .analytics-table td {
+  border-bottom: 1px solid var(--border);
+  padding: 10px 12px;
+  text-align: left;
+  color: var(--text);
+}
+.analytics-table tr:hover { background: var(--tile-hover); }
+.analytics-table thead th { background: var(--tile); color: var(--text); }

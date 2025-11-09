@@ -1,66 +1,52 @@
-import React from 'react';
-import { Routes, Route, Outlet, Navigate, useLocation } from 'react-router-dom';
-import { useAuth } from './hooks/useAuth';
+import React, { lazy } from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import AppLayout from './layouts/AppLayout';
 
-import Header from './components/Header';
-import Sidebar from './components/Sidebar';
-import Home from './pages/Home';
-import Genres from './pages/Genres';
-import AddMovie from './pages/AddMovie';
-import MovieDetails from './pages/MovieDetails';
-import Favorites from './pages/Favorites';
-import History from './pages/History';
-import AdminAnalytics from './pages/AdminAnalytics';
-import ProfilePage from './pages/ProfilePage';
-import SettingsPage from './pages/SettingsPage';
-import SubscriptionPage from './pages/SubscriptionPage';
-import Login from './pages/Login';
-import Register from './pages/Register';
+/* ==== Ленивая загрузка страниц ==== */
+const Home = lazy(() => import('./pages/Home'));
+const Genres = lazy(() => import('./pages/Genres'));
+const AddMovie = lazy(() => import('./pages/AddMovie'));
+const MovieDetails = lazy(() => import('./pages/MovieDetails'));
+const Favorites = lazy(() => import('./pages/Favorites'));
+const History = lazy(() => import('./pages/History'));
+const AdminAnalytics = lazy(() => import('./pages/AdminAnalytics'));
+const ProfilePage = lazy(() => import('./pages/ProfilePage'));
+const SettingsPage = lazy(() => import('./pages/SettingsPage'));
+const SubscriptionPage = lazy(() => import('./pages/SubscriptionPage'));
+const Login = lazy(() => import('./pages/Login'));
+const Register = lazy(() => import('./pages/Register'));
 
-function RequireAuth({ children }) {
-  const { user } = useAuth();
-  const loc = useLocation();
-  if (!user) return <Navigate to="/login" state={{ from: loc }} replace />;
-  return children;
+/* ==== Сброс прокрутки ==== */
+function ScrollToTop() {
+  React.useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [location.pathname]);
+  return null;
 }
 
-function Layout() {
-  return (
-    <div className="app">
-      <Header />
-      <div className="layout">
-        <aside className="sidebar"><Sidebar /></aside>
-        <main className="main">
-          <React.Suspense fallback={<p>Загрузка...</p>}>
-            <Outlet />
-          </React.Suspense>
-        </main>
-      </div>
-    </div>
-  );
-}
-
+/* ==== Маршруты ==== */
 export default function App() {
   return (
-    <Routes>
-      <Route element={<Layout />}>
-        <Route index element={<Home />} />
-        <Route path="add-movie" element={<AddMovie />} />
-        <Route path="genres" element={<Genres />} />
-        <Route path="movie/:imdbId" element={<MovieDetails />} />
-        <Route path="favorites" element={<Favorites />} />
-        <Route path="history" element={<History />} />
+    <>
+      <ScrollToTop />
 
-        <Route path="analytics" element={<RequireAuth><AdminAnalytics /></RequireAuth>} />
-        <Route path="profile" element={<RequireAuth><ProfilePage /></RequireAuth>} />
-        <Route path="settings" element={<RequireAuth><SettingsPage /></RequireAuth>} />
-        <Route path="subscription" element={<RequireAuth><SubscriptionPage /></RequireAuth>} />
-
-        <Route path="login" element={<Login />} />
-        <Route path="register" element={<Register />} />
-
-        <Route path="*" element={<Home />} />
-      </Route>
-    </Routes>
+      <Routes>
+        <Route element={<AppLayout />}>
+          <Route index element={<Home />} />
+          <Route path="genres" element={<Genres />} />
+          <Route path="add-movie" element={<AddMovie />} />
+          <Route path="movie/:imdbId" element={<MovieDetails />} />
+          <Route path="favorites" element={<Favorites />} />
+          <Route path="history" element={<History />} />
+          <Route path="analytics" element={<AdminAnalytics />} />
+          <Route path="profile" element={<ProfilePage />} />
+          <Route path="settings" element={<SettingsPage />} />
+          <Route path="subscription" element={<SubscriptionPage />} />
+          <Route path="login" element={<Login />} />
+          <Route path="register" element={<Register />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Route>
+      </Routes>
+    </>
   );
 }
