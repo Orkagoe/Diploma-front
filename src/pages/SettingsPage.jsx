@@ -1,16 +1,18 @@
+// src/pages/Settings.jsx
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useUserSettings } from '../hooks/useUserSettings';
+import { useTheme } from '../hooks/useTheme';
 import '../styles/pages/Settings.css';
 
 export default function Settings() {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+  const { theme, setTheme } = useTheme();         // << добавили
   const username = user?.username || localStorage.getItem('username') || '';
   const userId = username || 'user1';
 
-  // ----- SETTINGS (theme/language/region/newsletter) -----
   const {
     data: settingsResp,
     isLoading,
@@ -21,13 +23,13 @@ export default function Settings() {
 
   const initialSettings = useMemo(
     () => ({
-      theme: 'dark',
+      theme,                        // << стартуем из текущей темы
       language: 'ru',
       region: 'KZ',
       newsletter: false,
       ...(settingsResp?.data || {}),
     }),
-    [settingsResp]
+    [settingsResp, theme]
   );
 
   const [settings, setSettings] = useState(initialSettings);
@@ -36,9 +38,8 @@ export default function Settings() {
   const handleSaveSettings = async () => {
     try {
       await saveSettings(settings);
-    } catch {
-      /* ошибки обрабатываются в хуке */
-    }
+      setTheme(settings.theme);     // << применяем сохранённую тему
+    } catch {/* хук обработает */}
   };
 
   const handleLogout = () => {
@@ -55,7 +56,6 @@ export default function Settings() {
       {isError && <div className="error">Ошибка загрузки настроек</div>}
 
       <div className="settings-container">
-        {/* Настройки просмотра */}
         <div className="settings-section">
           <h2>Настройки просмотра</h2>
 
@@ -68,7 +68,11 @@ export default function Settings() {
               <select
                 className="setting-input"
                 value={settings.theme}
-                onChange={(e) => setSettings((s) => ({ ...s, theme: e.target.value }))}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setSettings((s) => ({ ...s, theme: val }));
+                  setTheme(val);      // << меняем моментально
+                }}
               >
                 <option value="dark">Тёмная</option>
                 <option value="light">Светлая</option>
@@ -118,7 +122,6 @@ export default function Settings() {
           </div>
         </div>
 
-        {/* Прочее */}
         <div className="settings-section">
           <h2>Прочее</h2>
           <div className="settings-grid">
@@ -129,7 +132,6 @@ export default function Settings() {
           </div>
         </div>
 
-        {/* Управление аккаунтом */}
         <div className="settings-section">
           <h2>Управление аккаунтом</h2>
           <div className="settings-grid">
