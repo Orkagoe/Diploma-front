@@ -9,7 +9,7 @@ import '../styles/pages/Settings.css';
 export default function Settings() {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
-  const { theme, setTheme } = useTheme();         // << добавили
+  const { theme, setTheme } = useTheme();
   const username = user?.username || localStorage.getItem('username') || '';
   const userId = username || 'user1';
 
@@ -21,32 +21,27 @@ export default function Settings() {
     saveStatus,
   } = useUserSettings(username);
 
-  const initialSettings = useMemo(
-    () => ({
-      theme,                        // << стартуем из текущей темы
-      language: 'ru',
-      region: 'KZ',
-      newsletter: false,
-      ...(settingsResp?.data || {}),
-    }),
-    [settingsResp, theme]
-  );
+  const initial = useMemo(() => ({
+    theme,
+    language: 'ru',
+    region: 'KZ',
+    newsletter: false,
+    ...(settingsResp?.data || {}),
+  }), [settingsResp, theme]);
 
-  const [settings, setSettings] = useState(initialSettings);
-  useEffect(() => setSettings(initialSettings), [initialSettings]);
+  const [settings, setSettings] = useState(initial);
+  useEffect(() => setSettings(initial), [initial]);
 
-  const handleSaveSettings = async () => {
+  const handleSave = async () => {
     try {
       await saveSettings(settings);
-      setTheme(settings.theme);     // << применяем сохранённую тему
-    } catch {/* хук обработает */}
+      setTheme(settings.theme);
+    } catch {}
   };
 
   const handleLogout = () => {
     logout?.();
-    ['favorites_', 'profile_', 'history_'].forEach((p) =>
-      localStorage.removeItem(`${p}${userId}`)
-    );
+    ['favorites_', 'profile_', 'history_'].forEach(p => localStorage.removeItem(`${p}${userId}`));
     navigate('/login');
   };
 
@@ -69,9 +64,9 @@ export default function Settings() {
                 className="setting-input"
                 value={settings.theme}
                 onChange={(e) => {
-                  const val = e.target.value;
-                  setSettings((s) => ({ ...s, theme: val }));
-                  setTheme(val);      // << меняем моментально
+                  const v = e.target.value;
+                  setSettings(s => ({ ...s, theme: v }));
+                  setTheme(v);
                 }}
               >
                 <option value="dark">Тёмная</option>
@@ -84,7 +79,7 @@ export default function Settings() {
               <select
                 className="setting-input"
                 value={settings.language}
-                onChange={(e) => setSettings((s) => ({ ...s, language: e.target.value }))}
+                onChange={(e) => setSettings(s => ({ ...s, language: e.target.value }))}
               >
                 <option value="ru">Русский</option>
                 <option value="kk">Қазақша</option>
@@ -97,7 +92,7 @@ export default function Settings() {
               <input
                 className="setting-input"
                 value={settings.region}
-                onChange={(e) => setSettings((s) => ({ ...s, region: e.target.value }))}
+                onChange={(e) => setSettings(s => ({ ...s, region: e.target.value }))}
               />
             </div>
 
@@ -106,14 +101,14 @@ export default function Settings() {
                 <input
                   type="checkbox"
                   checked={!!settings.newsletter}
-                  onChange={(e) => setSettings((s) => ({ ...s, newsletter: e.target.checked }))}
+                  onChange={(e) => setSettings(s => ({ ...s, newsletter: e.target.checked }))}
                 />
                 Подписка на рассылку
               </label>
             </div>
 
             <button
-              onClick={handleSaveSettings}
+              onClick={handleSave}
               className="btn btn-primary"
               disabled={saveStatus === 'loading'}
             >

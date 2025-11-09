@@ -19,6 +19,7 @@ function saveHistory(arr) {
 export default function Header() {
   const { user, logout } = useAuth();
   const { data: movies = [] } = useMovies();
+
   const [params] = useSearchParams();
   const location = useLocation();
   const navigate = useNavigate();
@@ -35,7 +36,7 @@ export default function Header() {
     setQ(urlQ);
     setOpen(false);
     setHighlight(-1);
-  }, [location.search]);
+  }, [location.search, params]);
 
   const dictionary = useMemo(() => {
     const t = new Set();
@@ -57,13 +58,10 @@ export default function Header() {
   }, [q, dictionary, history]);
 
   useEffect(() => {
-    function onDoc(e) {
+    const onDoc = (e) => {
       if (!menuRef.current || !inputRef.current) return;
-      if (
-        !menuRef.current.contains(e.target) &&
-        !inputRef.current.contains(e.target)
-      ) setOpen(false);
-    }
+      if (!menuRef.current.contains(e.target) && !inputRef.current.contains(e.target)) setOpen(false);
+    };
     document.addEventListener('mousedown', onDoc);
     return () => document.removeEventListener('mousedown', onDoc);
   }, []);
@@ -94,38 +92,23 @@ export default function Header() {
   };
 
   const onKeyDown = (e) => {
-    if (!open && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
-      setOpen(true);
-      return;
-    }
+    if (!open && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) { setOpen(true); return; }
     if (!open) return;
-
-    if (e.key === 'ArrowDown') {
+    if (e.key === 'ArrowDown') { e.preventDefault(); setHighlight(h => (h + 1) % suggestions.length); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); setHighlight(h => (h - 1 + suggestions.length) % suggestions.length); }
+    else if (e.key === 'Enter' && highlight >= 0 && suggestions[highlight]) {
       e.preventDefault();
-      setHighlight(h => (h + 1) % suggestions.length);
-    } else if (e.key === 'ArrowUp') {
-      e.preventDefault();
-      setHighlight(h => (h - 1 + suggestions.length) % suggestions.length);
-    } else if (e.key === 'Enter') {
-      if (highlight >= 0 && suggestions[highlight]) {
-        e.preventDefault();
-        setQ(suggestions[highlight]);
-        navigateWith(suggestions[highlight]);
-        const next = [suggestions[highlight], ...history.filter(x => x.toLowerCase() !== suggestions[highlight].toLowerCase())];
-        setHistory(next);
-        saveHistory(next);
-        setOpen(false);
-      }
-    } else if (e.key === 'Escape') {
+      const s = suggestions[highlight];
+      setQ(s);
+      navigateWith(s);
+      const next = [s, ...history.filter(x => x.toLowerCase() !== s.toLowerCase())];
+      setHistory(next);
+      saveHistory(next);
       setOpen(false);
-      setHighlight(-1);
-    }
+    } else if (e.key === 'Escape') { setOpen(false); setHighlight(-1); }
   };
 
-  const clearHistory = () => {
-    setHistory([]);
-    saveHistory([]);
-  };
+  const clearHistory = () => { setHistory([]); saveHistory([]); };
 
   return (
     <header className="header">
@@ -184,13 +167,7 @@ export default function Header() {
           {user ? (
             <>
               <Link to="/profile" className="profile-link">@{user.username}</Link>
-              <button
-                className="logout-btn"
-                onClick={logout}
-                type="button"
-              >
-                Выйти
-              </button>
+              <button type="button" className="logout-btn" onClick={logout}>Выйти</button>
             </>
           ) : (
             <>
