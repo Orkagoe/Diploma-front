@@ -134,7 +134,9 @@ export default function MovieDetails() {
               {isFavorite ? '✓ В избранном' : 'Добавить в избранное'}
             </button>
 
-            <button className="button button--ghost" onClick={() => alert('Плеер ещё не готов.')}>
+            <button
+                className="button button--ghost"
+               onClick={() => navigate(`/movie/${imdbId}/watch`)}>
               ▶ Смотреть
             </button>
           </div>
