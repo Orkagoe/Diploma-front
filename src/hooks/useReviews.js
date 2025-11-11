@@ -12,13 +12,13 @@ export const listReviews = async ({ imdbId, page = 0, size = 10 }) => {
   return { items: data.content, hasMore: !data.last };
 };
 
-export const createReview = async ({ imdbId, rating, text }) => {
+export const createReview = async ({ imdbId, text }) => {
   const { data } = await http.post(`/api/movies/${imdbId}/reviews`, {
-    rating,
-    text,
+    body: text,
   });
   return data;
 };
+
 
 export const updateReview = async (id, payload) => {
   const { data } = await http.put(`/api/reviews/${id}`, payload);
