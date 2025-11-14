@@ -1,3 +1,5 @@
+// src/components/Comments/CommentItem.jsx
+
 import { useState } from "react";
 
 export default function CommentItem({
@@ -17,6 +19,7 @@ export default function CommentItem({
     setText("");
     setReplyOpen(false);
   };
+
   const submitEdit = () => {
     onEdit?.(node.id, text);
     setText("");
@@ -40,18 +43,13 @@ export default function CommentItem({
             <span style={{ color: "#8a8f98", fontSize: 12 }}>
               {new Date(node.createdAt).toLocaleString()}
             </span>
-            {node.isEdited && (
-              <span style={{ color: "#8a8f98", fontSize: 12 }}>(изменено)</span>
-            )}
-            {node.depth > 5 && (
-              <span style={{ marginLeft: 6, fontSize: 11, color: "#8a8f98" }}>
-                lvl {node.depth}
-              </span>
-            )}
           </div>
 
+          {/* ПРАВИЛЬНО: node.body */}
           {!node.isDeleted ? (
-            <p style={{ marginTop: 4, whiteSpace: "pre-wrap" }}>{node.text}</p>
+            <p style={{ marginTop: 4, whiteSpace: "pre-wrap" }}>
+              {node.body}
+            </p>
           ) : (
             <i style={{ color: "#8a8f98" }}>Комментарий удалён</i>
           )}
@@ -64,7 +62,9 @@ export default function CommentItem({
               👎 {node.dislikes || 0}
             </button>
             <button onClick={() => setReplyOpen((v) => !v)}>Ответить</button>
-            <button onClick={() => setEditOpen((v) => !v)}>Редактировать</button>
+            <button onClick={() => setEditOpen((v) => !v)}>
+              Редактировать
+            </button>
             <button onClick={() => onDelete?.(node.id)}>Удалить</button>
           </div>
 

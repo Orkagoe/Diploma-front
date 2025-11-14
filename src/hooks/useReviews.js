@@ -1,66 +1,76 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+// src/hooks/useReviews.js
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import http from "../shared/api/http";
 
-// === API ===
-export const previewReviews = async ({ imdbId, limit = 5 }) => {
-  const { data } = await http.get(`/api/movies/${imdbId}/reviews?size=${limit}`);
-  return { items: data.content || [] };
-};
+// получить список отзывов
+async function listReviews({ imdbId, page = 0, size = 10 }) {
+  const { data } = await http.get(`/api/movies/${imdbId}/reviews`, {
+    params: { page, size },
+  });
 
-export const listReviews = async ({ imdbId, page = 0, size = 10 }) => {
-  const { data } = await http.get(`/api/movies/${imdbId}/reviews?page=${page}&size=${size}`);
-  return { items: data.content, hasMore: !data.last };
-};
+  return {
+    items: data.content,
+    hasMore: !data.last,
+  };
+}
 
-export const createReview = async ({ imdbId, text }) => {
+// создать отзыв
+async function createReview({ imdbId, rating, title, body }) {
   const { data } = await http.post(`/api/movies/${imdbId}/reviews`, {
-    body: text,
+    rating,
+    title,
+    body,
   });
   return data;
-};
+}
 
-
-export const updateReview = async (id, payload) => {
+// обновить отзыв
+async function updateReview(id, payload) {
   const { data } = await http.put(`/api/reviews/${id}`, payload);
   return data;
-};
+}
 
-export const reactReview = async (id, reaction) => {
+// реакция
+async function reactReview(id, reaction) {
   await http.post(`/api/reviews/${id}/reactions/${reaction}`);
-};
+}
 
-// === HOOKS ===
-export const usePreviewReviews = (imdbId, limit = 5) =>
-  useQuery({
-    queryKey: ["reviewsPreview", imdbId, limit],
-    queryFn: () => previewReviews({ imdbId, limit }),
-  });
-
-export const usePagedReviews = (imdbId, page, size) =>
-  useQuery({
+// хук: список
+export function useReviews(imdbId, page = 0, size = 10) {
+  return useQuery({
     queryKey: ["reviews", imdbId, page, size],
+    enabled: !!imdbId,
     queryFn: () => listReviews({ imdbId, page, size }),
     keepPreviousData: true,
   });
+}
 
-export const useCreateOrUpdateReview = (imdbId) => {
+// хук: CRUD
+export function useCreateOrUpdateReview(imdbId) {
   const qc = useQueryClient();
-  const invalidate = () => {
-    qc.invalidateQueries({ queryKey: ["reviewsPreview", imdbId] });
+
+  const invalidate = () =>
     qc.invalidateQueries({ queryKey: ["reviews", imdbId] });
-  };
-  const create = useMutation({ mutationFn: createReview, onSuccess: invalidate });
+
+  const create = useMutation({
+    mutationFn: createReview,
+    onSuccess: invalidate,
+  });
+
   const update = useMutation({
     mutationFn: ({ id, payload }) => updateReview(id, payload),
     onSuccess: invalidate,
   });
-  return { create, update };
-};
 
-export const useReactReview = (imdbId) => {
+  return { create, update };
+}
+
+// лайки/дизлайки
+export function useReactReview(imdbId) {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: ({ id, reaction }) => reactReview(id, reaction),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["reviews", imdbId] }),
+    onSuccess: () =>
+      qc.invalidateQueries({ queryKey: ["reviews", imdbId] }),
   });
-};
+}
